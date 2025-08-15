@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Tuple
 class VectorStore(ABC):
     
     @abstractmethod
-    def add_texts(self, texts: List[str], metadatas: List[Dict[str, Any]], emmbeddings: List[List[float]]) -> List[str]:
+    def add_texts(self, texts: List[str], metadatas: List[Dict[str, Any]], embeddings: List[List[float]]) -> List[str]:
         """_summary_
 
         Args:

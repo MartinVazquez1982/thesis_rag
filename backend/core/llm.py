@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 class LLM(ABC):
     
     @abstractmethod
-    def generate(self, promt: str, **kwargs) -> str:
+    def generate(self, prompt: str, **kwargs) -> str:
         """_summary_
 
         Args:
