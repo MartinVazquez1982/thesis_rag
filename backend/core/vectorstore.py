@@ -35,4 +35,8 @@ class VectorStore(ABC):
             Dict[str, Any]: _description_
         """
         raise NotImplementedError
-        
+    
+    @abstractmethod
+    def reset(self) -> None:
+        """Borra/limpia la colección (para reindexar)."""
+        raise NotImplementedError
