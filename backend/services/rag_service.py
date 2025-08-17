@@ -27,7 +27,7 @@ class RAGService:
         contexts = []
         for txt, meta, dist in zip(res["documents"], res["metadatas"], res["distances"]):
             contexts.append({"text": txt, "metadata": meta, "distance": float(dist)})
-
         prompt = self._build_prompt(question, [c["text"] for c in contexts])
+        
         answer = self.llm.generate(prompt)
         return {"answer": answer, "contexts": contexts}
