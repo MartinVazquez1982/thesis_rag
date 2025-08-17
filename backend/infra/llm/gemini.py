@@ -1,5 +1,4 @@
 import os
-from typing import List
 import google.generativeai as genai
 from core.llm import LLM
 
@@ -12,4 +11,4 @@ class GeminiLLM(LLM):
         self.model = genai.GenerativeModel(model_name)
     
     def generate(self, prompt, **kwargs):
-        return self.model.generate_content(prompt)
+        return self.model.generate_content(prompt).text
