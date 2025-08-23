@@ -1,34 +1,48 @@
-import uuid
+import uuid, os
 from typing import List, Dict, Any
 from qdrant_client import QdrantClient, models
 from core.vectorstore import VectorStore # Asumo que esta es tu clase base
 
 class QdrantStore(VectorStore):
     def __init__(self, collection_name: str = "thesis", vector_size: int = 768):
-        self.collection_name = collection_name
-        self.vector_size = vector_size # ¡Importante! Qdrant necesita saber el tamaño de tus embeddings
+        """Qdrant-based implementation of a VectorStore.
 
-        # --- CAMBIO CLAVE ---
-        # Inicializa el cliente para que guarde los datos en una carpeta local.
-        # Esto es el equivalente a PersistentClient de ChromaDB, pero más optimizado.
-        self.client = QdrantClient(url="http://localhost:6333")
-        
-        # Obtenemos la lista de colecciones existentes
+        This class wraps the Qdrant client to provide storage, search, and reset 
+        functionality for embeddings and their associated metadata.
+
+        Args:
+            collection_name (str, optional): Name of the Qdrant collection. Defaults to "thesis".
+            vector_size (int, optional): Dimension of the embedding vectors. Defaults to 768.
+        """
+        self.collection_name = collection_name
+        self.vector_size = vector_size
+
+        url = os.getenv("QDRANT_URL")
+        self.client = QdrantClient(url=url)
+
         existing_collections = [c.name for c in self.client.get_collections().collections]
 
-        # Creamos la colección SÓLO si no existe
         if self.collection_name not in existing_collections:
             self.client.create_collection(
                 collection_name=self.collection_name,
                 vectors_config=models.VectorParams(
-                    size=self.vector_size, # Tamaño del embedding (Gemini suele usar 768)
+                    size=self.vector_size,
                     distance=models.Distance.COSINE,
-                    on_disk=True # <-- ¡MAGIA! Fuerza que los vectores se guarden en disco.
+                    on_disk=True
                 )
             )
 
     def add_texts(self, texts: List[str], metadatas: List[Dict[str, Any]], embeddings: List[List[float]]) -> List[str]:
-        """Añade un lote de textos, metadatos y embeddings a la colección."""
+        """Add a batch of texts, metadata, and embeddings to the collection.
+
+        Args:
+            texts (List[str]): List of documents to store.
+            metadatas (List[Dict[str, Any]]): Metadata dictionaries corresponding to each text.
+            embeddings (List[List[float]]): Embedding vectors corresponding to each text.
+
+        Returns:
+            List[str]: A list of unique IDs assigned to the stored documents.
+        """
         ids = [str(uuid.uuid4()) for _ in texts]
         
         self.client.upsert(
@@ -38,24 +52,33 @@ class QdrantStore(VectorStore):
                 vectors=embeddings,
                 payloads=[{**meta, "text": txt} for meta, txt in zip(metadatas, texts)]
             ),
-            wait=False # Hacemos la subida asíncrona para no bloquear el script
+            wait=False
         )
         return ids
     
     def query(self, query_embedding: List[float], k: int = 4) -> Dict[str, Any]:
-        """Realiza una búsqueda de similitud."""
+        """Search for the most similar documents in the collection.
+
+        Args:
+            query_embedding (List[float]): Embedding vector of the query.
+            k (int, optional): Number of top results to return. Defaults to 4.
+
+        Returns:
+            Dict[str, Any]: Dictionary with search results containing:
+                - "documents" (List[str]): Retrieved texts.
+                - "metadatas" (List[Dict[str, Any]]): Associated metadata for each result.
+                - "distances" (List[float]): Similarity scores (higher is more similar).
+        """
         search_result = self.client.search(
             collection_name=self.collection_name,
             query_vector=query_embedding,
             limit=k,
-            with_payload=True, # Para que nos devuelva los metadatos y el texto
-            with_vectors=False # No necesitamos los vectores en la respuesta
+            with_payload=True,
+            with_vectors=False
         )
         
-        # Formateamos la salida para que sea igual a la que tenías
         documents, metadatas, distances = [], [], []
         for hit in search_result:
-            # El texto lo guardamos en el payload
             payload = hit.payload or {}
             documents.append(payload.pop("text", ""))
             metadatas.append(payload)
@@ -68,10 +91,12 @@ class QdrantStore(VectorStore):
         }
     
     def reset(self) -> None:
-        """Borra y recrea la colección."""
+        """Delete and recreate the collection.
+
+        This removes all stored data and reinitializes the collection 
+        with the configured vector size and cosine similarity.
+        """
         self.client.delete_collection(collection_name=self.collection_name)
-        # La colección se recreará automáticamente en el __init__ si es necesario,
-        # pero es mejor ser explícito.
         self.client.create_collection(
             collection_name=self.collection_name,
             vectors_config=models.VectorParams(

@@ -5,15 +5,15 @@ class Embeddings(ABC):
     
     @abstractmethod
     def embed(self, texts: List[str]) -> List[List[float]]:
-        """_summary_
+        """Generate vector embeddings for a list of texts.
 
         Args:
-            texts (List[str]): _description_
+            texts (List[str]): List of input strings to embed.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Must be implemented in subclasses.
 
         Returns:
-            List[List[float]]: _description_
+            List[List[float]]: A list of embedding vectors, one per input text.
         """
         raise NotImplementedError

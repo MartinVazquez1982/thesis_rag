@@ -5,38 +5,43 @@ class VectorStore(ABC):
     
     @abstractmethod
     def add_texts(self, texts: List[str], metadatas: List[Dict[str, Any]], embeddings: List[List[float]]) -> List[str]:
-        """_summary_
+        """Add texts and their embeddings to the vector store.
 
         Args:
-            texts (List[str]): _description_
-            metadatas (List[Dict[str, Any]]): _description_
-            emmbeddings (List[List[float]]): _description_
+            texts (List[str]): List of documents to store.
+            metadatas (List[Dict[str, Any]]): Metadata associated with each document.
+            embeddings (List[List[float]]): Embedding vectors corresponding to each text.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Must be implemented in subclasses.
 
         Returns:
-            List[str]: _description_
+            List[str]: A list of IDs assigned to the stored documents.
         """
         raise NotImplementedError
     
     @abstractmethod
     def query(self, query_embedding: List[float], k: int = 4) -> Dict[str, Any]:
-        """_summary_
+        """Query the vector store for the most relevant documents.
 
         Args:
-            query_embedding (List[float]): _description_
-            k (int, optional): _description_. Defaults to 4.
+            query_embedding (List[float]): Embedding vector of the query.
+            k (int, optional): Number of top results to retrieve. Defaults to 4.
 
         Raises:
-            NotImplementedError: _description_
+            NotImplementedError: Must be implemented in subclasses.
 
         Returns:
-            Dict[str, Any]: _description_
+            Dict[str, Any]: A dictionary containing retrieved documents, 
+                their metadata, and similarity scores/distances.
         """
         raise NotImplementedError
     
     @abstractmethod
     def reset(self) -> None:
-        """Borra/limpia la colección (para reindexar)."""
+        """Clear the collection to allow reindexing.
+
+        Raises:
+            NotImplementedError: Must be implemented in subclasses.
+        """
         raise NotImplementedError

@@ -26,6 +26,7 @@ CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "150"))
 INDEX = IndexingService(VS, EMB, CHUNK_SIZE, CHUNK_OVERLAP)
 RAG_SERVICE = RAGService(VS, EMB, LLM)
 
+# Models
 class QueryRequest(BaseModel):
     question: str
     k: int = 4
@@ -34,6 +35,7 @@ class QueryResponse(BaseModel):
     answer: str
     contexts: List[Dict[str, Any]]
 
+# Routes
 @app.on_event("startup")
 def on_startup():
     try:
