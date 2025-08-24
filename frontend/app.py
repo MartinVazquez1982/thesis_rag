@@ -3,7 +3,7 @@ import os
 
 # Page configuration
 st.set_page_config(
-    page_title='Gestión Frigorífico',
+    page_title='RAG-Powered Thesis Explorer',
     layout='wide',
     page_icon="🎓",
     initial_sidebar_state="collapsed"

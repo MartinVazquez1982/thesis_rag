@@ -1,7 +1,7 @@
 import os
 import requests
 
-URL = f"{os.getenv("RAG_URL")}/query"
+URL = f"{os.getenv('RAG_URL')}/query"
 
 def get_llm_response(question: str) -> str:
     payload = {
